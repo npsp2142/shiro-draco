@@ -17,8 +17,10 @@ app.get("/bunny.drc", (req, res) => {
   res.sendFile(__dirname + "/bunny.drc");
 });
 
+app.use(express.static("public"));
+
 io.on("connection", (socket) => {
-  console.log("a user connected", new Date( Date.now()));
+  console.log("a user connected", new Date(Date.now()));
   socket.on("disconnect", () => {
     console.log("user disconnected");
   });
@@ -34,9 +36,8 @@ server.listen(3000, () => {
   console.log("listening on *:3000");
 });
 
-
-io.on('connection', (socket) => {
-    socket.on('chat message', (msg) => {
-      io.emit('chat message', msg);
-    });
+io.on("connection", (socket) => {
+  socket.on("chat message", (msg) => {
+    io.emit("chat message", msg);
   });
+});
