@@ -13,6 +13,10 @@ app.get("/index2.html", (req, res) => {
   res.sendFile(__dirname + "/index2.html");
 });
 
+app.get("/bunny.drc", (req, res) => {
+  res.sendFile(__dirname + "/bunny.drc");
+});
+
 io.on("connection", (socket) => {
   console.log("a user connected", new Date( Date.now()));
   socket.on("disconnect", () => {
