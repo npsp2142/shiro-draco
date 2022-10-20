@@ -22,14 +22,14 @@
         box-sizing: border-box;
         backdrop-filter: blur(10px);
       }
-      #input {
+      #msgInput {
         border: none;
         padding: 0 1rem;
         flex-grow: 1;
         border-radius: 2rem;
         margin: 0.25rem;
       }
-      #input:focus {
+      #msg-msgInput:focus {
         outline: none;
       }
       #form > button {
@@ -67,15 +67,72 @@
       }
     </script>
 
+    <script>
+      console.log(window);
+      // Updates the select element with the provided set of cameras
+      function updateCameraList(cameras) {
+        console.log("updateCameraList", cameras);
+        const listElement = document.getElementById("availableCameras");
+        console.log("updateCameraList listEle", listElement);
+
+        listElement.innerHTML = "1234";
+        cameras
+          .map((camera) => {
+            const cameraOption = new Option();
+            cameraOption.label = camera.label;
+            cameraOption.value = camera.deviceId;
+            return cameraOption;
+          })
+          .forEach((cameraOption) => listElement.add(cameraOption));
+      }
+
+      // Fetch an array of devices of a certain type
+      async function getConnectedDevices(type) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        return devices.filter((device) => device.kind === type);
+      }
+
+      // Get the initial set of cameras connected
+      //   const videoCameras = getConnectedDevices("videoinput");
+
+      getConnectedDevices("videoinput").then((videoCameras) => {
+        console.log("videoCameras", videoCameras);
+        updateCameraList(videoCameras);
+      });
+      // Listen for changes to media devices and update the list accordingly
+      navigator.mediaDevices.addEventListener("devicechange", (event) => {
+        const newCameraList = getConnectedDevices("video");
+        updateCameraList(newCameraList);
+      });
+
+      //   const openMediaDevices = async (constraints) => {
+      //     return await navigator.mediaDevices.getUserMedia(constraints);
+      //   };
+
+      //   try {
+      //     const stream = openMediaDevices({ video: true, audio: true });
+      //     console.log("Got MediaStream:", stream);
+      //   } catch (error) {
+      //     console.error("Error accessing media devices.", error);
+      //   }
+
+      //     async function getConnectedDevices(type) {
+      //     const devices = await navigator.mediaDevices.enumerateDevices();
+      //     return devices.filter(device => device.kind === type)
+      // }
+
+      // const videoCameras = getConnectedDevices('videoinput');
+      // console.log('Cameras found:', videoCameras);
+    </script>
+
     <script type="module">
       import * as THREE from "three";
-      import { DRACOLoader } from './js/DRACOLoader.js';
-
+      import { DRACOLoader } from "./js/DRACOLoader.js";
 
       const scene = new THREE.Scene();
       // three.js globals.
       var camera, renderer;
-      console.log(THREE)
+      console.log(THREE);
       // Create the Draco loader.
       const dracoLoader = new DRACOLoader();
 
@@ -168,33 +225,19 @@
         initThreejs();
         animate();
         loadDracoMesh("bunny.drc");
-      };
-    </script>
-    <script src="/socket.io/socket.io.js"></script>
-    <!-- <script src="dracoDemo.js"></script> -->
-  </head>
-  <body>
-    <ul id="messages"></ul>
-    <div id="container"></div>
-    <form id="form" action="">
-      <select id="availableCameras"></select>
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-    <script>
-      window.onload = function () {
         var socket = io();
 
         var messages = document.getElementById("messages");
-
         var form = document.getElementById("form");
-        var input = document.getElementById("input");
+        var msgInput = document.getElementById("msgInput");
+        console.log(msgInput);
         form.addEventListener("submit", (e) => {
           e.preventDefault();
           console.log("chat submitted");
 
-          if (input.value) {
-            socket.emit("chat message", input.value);
-            input.value = "";
+          if (msgInput.value) {
+            socket.emit("chat message", msgInput.value);
+            msgInput.value = "";
           }
         });
         socket.on("chat message", function (msg) {
@@ -205,61 +248,16 @@
           window.scrollTo(0, document.body.scrollHeight);
         });
       };
-      console.log(window);
-      // Updates the select element with the provided set of cameras
-      function updateCameraList(cameras) {
-        console.log("updateCameraList", cameras);
-        const listElement = document.getElementById("availableCameras");
-        console.log("updateCameraList listEle", listElement);
-
-        listElement.innerHTML = "1234";
-        cameras
-          .map((camera) => {
-            const cameraOption = new Option();
-            cameraOption.label = camera.label;
-            cameraOption.value = camera.deviceId;
-            return cameraOption;
-          })
-          .forEach((cameraOption) => listElement.add(cameraOption));
-      }
-
-      // Fetch an array of devices of a certain type
-      async function getConnectedDevices(type) {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        return devices.filter((device) => device.kind === type);
-      }
-
-      // Get the initial set of cameras connected
-      //   const videoCameras = getConnectedDevices("videoinput");
-
-      getConnectedDevices("videoinput").then((videoCameras) => {
-        console.log("videoCameras", videoCameras);
-        updateCameraList(videoCameras);
-      });
-      // Listen for changes to media devices and update the list accordingly
-      navigator.mediaDevices.addEventListener("devicechange", (event) => {
-        const newCameraList = getConnectedDevices("video");
-        updateCameraList(newCameraList);
-      });
-
-      //   const openMediaDevices = async (constraints) => {
-      //     return await navigator.mediaDevices.getUserMedia(constraints);
-      //   };
-
-      //   try {
-      //     const stream = openMediaDevices({ video: true, audio: true });
-      //     console.log("Got MediaStream:", stream);
-      //   } catch (error) {
-      //     console.error("Error accessing media devices.", error);
-      //   }
-
-      //     async function getConnectedDevices(type) {
-      //     const devices = await navigator.mediaDevices.enumerateDevices();
-      //     return devices.filter(device => device.kind === type)
-      // }
-
-      // const videoCameras = getConnectedDevices('videoinput');
-      // console.log('Cameras found:', videoCameras);
     </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- <script src="dracoDemo.js"></script> -->
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <div id="container"></div>
+    <form id="form" action="">
+      <select id="availableCameras"></select>
+      <input id="msgInput" autocomplete="off" /><button>Send</button>
+    </form>
   </body>
 </html>
